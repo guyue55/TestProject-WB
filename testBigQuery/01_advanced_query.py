@@ -2,15 +2,16 @@ from google.cloud import bigquery
 
 # 初始化客户端
 # 替换为你的项目 ID
-PROJECT_ID = "webeye-internal-test" 
+PROJECT_ID = "webeye-internal-test"
 client = bigquery.Client(project=PROJECT_ID)
+
 
 def run_parameterized_query(state_name, limit_count):
     """
     运行参数化查询。
     参数化查询可以防止 SQL 注入，并且允许 BigQuery 缓存查询计划，提高效率。
     """
-    
+
     # 1. 定义 SQL，使用 @符号 定义参数占位符
     # 💡 最佳实践: 永远使用参数化查询，即使是内部系统。
     # 它可以防止 SQL 注入，并且 BigQuery 可以缓存编译后的查询计划，复用性更高。
@@ -28,7 +29,7 @@ def run_parameterized_query(state_name, limit_count):
         query_parameters=[
             # 标量参数 (Scalar)
             bigquery.ScalarQueryParameter("state", "STRING", state_name),
-            bigquery.ScalarQueryParameter("limit", "INT64", limit_count)
+            bigquery.ScalarQueryParameter("limit", "INT64", limit_count),
         ]
     )
 
@@ -45,8 +46,9 @@ def run_parameterized_query(state_name, limit_count):
 
     print("\n查询结果 (Top Rows):")
     print(df.head())
-    
+
     return df
+
 
 if __name__ == "__main__":
     # 尝试查询 'CA' (加州) 的前 5 名

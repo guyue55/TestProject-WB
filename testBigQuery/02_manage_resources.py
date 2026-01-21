@@ -8,6 +8,7 @@ client = bigquery.Client(project=PROJECT_ID)
 DATASET_ID = f"{PROJECT_ID}.learning_bq"
 TABLE_ID = f"{DATASET_ID}.users"
 
+
 def create_dataset():
     """创建 Dataset"""
     try:
@@ -19,22 +20,27 @@ def create_dataset():
         dataset = bigquery.Dataset(DATASET_ID)
         # 💡 关键设置: 显式指定 location (如 'US', 'asia-northeast1')。
         # 不同 location 的数据无法 JOIN。如果不指定，默认为 US，但建议要在代码中显式写明。
-        dataset.location = "US" 
+        dataset.location = "US"
         dataset = client.create_dataset(dataset, timeout=30)
         print(f"成功创建 Dataset: {dataset.dataset_id}")
 
+
 def create_table_with_schema():
     """创建一个带有明确 Schema 的 Table"""
-    
+
     # 1. 定义 Schema
     # 💡 最佳实践: 相比于让 BigQuery 自动推断 (autodetect)，生产环境强力推荐明确指定 Schema。
     # 这能避免数据类型错误（比如把 '001' 识别成整数 1），并作为文档存在。
     schema = [
         bigquery.SchemaField("id", "INTEGER", mode="REQUIRED", description="用户ID"),
-        bigquery.SchemaField("username", "STRING", mode="REQUIRED", description="用户名"),
+        bigquery.SchemaField(
+            "username", "STRING", mode="REQUIRED", description="用户名"
+        ),
         bigquery.SchemaField("email", "STRING", mode="NULLABLE"),
         bigquery.SchemaField("created_at", "TIMESTAMP", mode="NULLABLE"),
-        bigquery.SchemaField("tags", "STRING", mode="REPEATED", description="用户标签(数组)"),
+        bigquery.SchemaField(
+            "tags", "STRING", mode="REPEATED", description="用户标签(数组)"
+        ),
     ]
 
     table = bigquery.Table(TABLE_ID, schema=schema)
@@ -44,6 +50,7 @@ def create_table_with_schema():
         print(f"成功创建表: {table.full_table_id}")
     except Conflict:
         print(f"表 {TABLE_ID} 已经存在。")
+
 
 if __name__ == "__main__":
     create_dataset()

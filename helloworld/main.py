@@ -10,6 +10,7 @@ import urllib.request
 
 app = Flask(__name__)
 
+
 def _metadata_sa_email():
     try:
         req = urllib.request.Request(
@@ -22,7 +23,7 @@ def _metadata_sa_email():
         return None
 
 
-@app.route('/whoami')
+@app.route("/whoami")
 def who_am_i():
     try:
         credentials, project = google.auth.default()
@@ -38,12 +39,12 @@ def who_am_i():
             "identity_type": "Service Account",
             "sa_email_from_adc": sa_email_adc,
             "sa_email_from_metadata": sa_email_meta,
-            "is_credentials_valid": getattr(credentials, "valid", False)
+            "is_credentials_valid": getattr(credentials, "valid", False),
         }
     except Exception as e:
         identity = {
             "status": "Failure - Credentials or SDK Issue",
-            "error_detail": str(e)
+            "error_detail": str(e),
         }
 
     return jsonify(identity)
@@ -54,7 +55,7 @@ def hello_world():
     """Example Hello World route."""
     name = os.environ.get("NAME", "World")
     safe_name = html.escape(name)
-    py_ver = sys.version.split(' ')[0]
+    py_ver = sys.version.split(" ")[0]
     flask_ver = flask_pkg.__version__
     sa_meta = _metadata_sa_email() or "-"
     service = os.environ.get("K_SERVICE") or "-"
@@ -66,11 +67,19 @@ def hello_world():
             credentials.refresh(Request())
         except Exception:
             pass
-        project_id = project or (os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("GCP_PROJECT") or "-")
+        project_id = project or (
+            os.environ.get("GOOGLE_CLOUD_PROJECT")
+            or os.environ.get("GCP_PROJECT")
+            or "-"
+        )
         sa_adc = getattr(credentials, "service_account_email", None) or "-"
         cred_valid = getattr(credentials, "valid", False)
     except Exception:
-        project_id = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("GCP_PROJECT") or "-"
+        project_id = (
+            os.environ.get("GOOGLE_CLOUD_PROJECT")
+            or os.environ.get("GCP_PROJECT")
+            or "-"
+        )
         sa_adc = "-"
         cred_valid = False
     return f"""<!doctype html>

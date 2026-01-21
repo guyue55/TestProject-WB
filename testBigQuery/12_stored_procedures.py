@@ -8,13 +8,14 @@ TARGET_TABLE = f"{DATASET_ID}.app_logs"
 
 client = bigquery.Client(project=PROJECT_ID)
 
+
 def create_stored_procedure():
     """
     创建存储过程 (Stored Procedure)。
     场景: 定期清理 N 天前的日志。把这个逻辑封装起来，以后只需要调用 CALL cleanup_old_logs(30) 即可。
     """
     print(f"--- 1. 创建存储过程: {PROCEDURE_ID} ---")
-    
+
     # 定义过程：接受一个 INT64 参数 days_to_keep
     query = f"""
         CREATE OR REPLACE PROCEDURE `{PROCEDURE_ID}`(days_to_keep INT64)
@@ -36,22 +37,24 @@ def create_stored_procedure():
             
         END;
     """
-    
+
     job = client.query(query)
     job.result()
     print("存储过程创建成功！")
 
+
 def call_procedure():
     """在 Python 中调用存储过程"""
     print("\n--- 2. 调用存储过程 ---")
-    
+
     # 比如清理 7 天前的数据
     query = f"CALL `{PROCEDURE_ID}`(7);"
-    
+
     job = client.query(query)
     # 存储过程同样可能产生多个结果集
     job.result()
     print("存储过程调用结束。")
+
 
 if __name__ == "__main__":
     # 确保存储过程依赖的表存在

@@ -6,13 +6,14 @@ UDF_NAME = f"{DATASET_ID}.parse_user_agent"
 
 client = bigquery.Client(project=PROJECT_ID)
 
+
 def create_persistent_udf():
     """
     创建一个持久化 UDF (User Defined Function)。
     场景: 我们想解析 User-Agent 字符串，提取浏览器信息。SQL 处理这个很麻烦，但 JavaScript 有现成的正则能力。
     """
     print(f"--- 1. 创建 JavaScript UDF: {UDF_NAME} ---")
-    
+
     # 这是一个 JavaScript UDF，输入 STRING，输出 STRING
     query = f"""
         CREATE OR REPLACE FUNCTION `{UDF_NAME}`(ua STRING)
@@ -26,16 +27,17 @@ def create_persistent_udf():
             return "Other";
         \"\"\";
     """
-    
+
     # 注意: 创建 Routine (Function) 也使用 client.query
     job = client.query(query)
     job.result()
     print("UDF 创建成功！已经被存储在 Dataset 中。")
 
+
 def use_udf_in_query():
     """在查询中调用刚才定义的 UDF"""
     print("\n--- 2. 调用 UDF 进行查询 ---")
-    
+
     # 模拟一些数据
     query = f"""
         WITH sample_data AS (
@@ -51,10 +53,11 @@ def use_udf_in_query():
             `{UDF_NAME}`(ua) as browser_type -- 调用 UDF
         FROM sample_data
     """
-    
+
     df = client.query(query).to_dataframe()
     print("查询结果:")
     print(df)
+
 
 if __name__ == "__main__":
     create_persistent_udf()

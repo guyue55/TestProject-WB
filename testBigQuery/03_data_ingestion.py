@@ -9,6 +9,7 @@ TABLE_ID = f"{DATASET_ID}.users"
 
 client = bigquery.Client(project=PROJECT_ID)
 
+
 def insert_streaming_data():
     """
     方法 1: 流式插入 (Streaming Insert)
@@ -17,19 +18,32 @@ def insert_streaming_data():
     ❌ 缺点: 按插入字节收费 (昂贵)，在数据落盘前(buffer期)无法更新/删除。
     """
     print("--- 开始流式插入 ---")
-    
+
     rows_to_insert = [
-        {"id": 101, "username": "alice", "email": "alice@example.com", "created_at": str(datetime.datetime.now()), "tags": ["admin", "editor"]},
-        {"id": 102, "username": "bob", "email": "bob@example.com", "created_at": str(datetime.datetime.now()), "tags": ["viewer"]}
+        {
+            "id": 101,
+            "username": "alice",
+            "email": "alice@example.com",
+            "created_at": str(datetime.datetime.now()),
+            "tags": ["admin", "editor"],
+        },
+        {
+            "id": 102,
+            "username": "bob",
+            "email": "bob@example.com",
+            "created_at": str(datetime.datetime.now()),
+            "tags": ["viewer"],
+        },
     ]
 
     # insert_rows_json 接受字典列表
     errors = client.insert_rows_json(TABLE_ID, rows_to_insert)
-    
+
     if errors == []:
         print("流式插入成功！(数据可能需要几秒到几分钟才能完全可查询)")
     else:
         print(f"流式插入遇到错误: {errors}")
+
 
 def load_data_from_dataframe():
     """
@@ -40,14 +54,18 @@ def load_data_from_dataframe():
     💡 最佳实践: 只要不要求秒级实时，永远优先选择 Load Job。
     """
     print("\n--- 开始批量加载 (Load Job) ---")
-    
+
     # 模拟一些本地数据
     data = {
         "id": [201, 202, 203],
         "username": ["charlie", "david", "eve"],
         "email": ["c@ex.com", "d@ex.com", "e@ex.com"],
-        "created_at": [datetime.datetime.now(), datetime.datetime.now(), datetime.datetime.now()],
-        "tags": [["vip"], [], ["new_user", "promo"]]
+        "created_at": [
+            datetime.datetime.now(),
+            datetime.datetime.now(),
+            datetime.datetime.now(),
+        ],
+        "tags": [["vip"], [], ["new_user", "promo"]],
     }
     df = pd.DataFrame(data)
 
@@ -61,12 +79,10 @@ def load_data_from_dataframe():
     )
 
     # 发起加载任务
-    job = client.load_table_from_dataframe(
-        df, TABLE_ID, job_config=job_config
-    )
+    job = client.load_table_from_dataframe(df, TABLE_ID, job_config=job_config)
 
     # 等待任务完成
-    job.result() 
+    job.result()
 
     print(f"批量加载完成。已加载 {job.output_rows} 行。")
 
@@ -75,8 +91,9 @@ def load_data_from_dataframe():
     print(f"显示表信息: {table}")
     print(f"表当前总行数: {table.num_rows}")
 
+
 if __name__ == "__main__":
     insert_streaming_data()
     # 等待一小会儿让流式缓冲稍微稳定一下（虽然不能保证立刻读到）
-    time.sleep(2) 
+    time.sleep(2)
     load_data_from_dataframe()

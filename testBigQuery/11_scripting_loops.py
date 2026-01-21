@@ -3,13 +3,14 @@ from google.cloud import bigquery
 PROJECT_ID = "webeye-internal-test"
 client = bigquery.Client(project=PROJECT_ID)
 
+
 def run_scripting_demo():
     """
     演示 BigQuery Scripting: 变量声明、WHILE 循环、IF 判断。
     这让 SQL 具备了编程语言的控制流能力。
     """
     print("--- 运行脚本化 SQL (BigQuery Scripting) ---")
-    
+
     # 一个带有逻辑的脚本：
     # 1. 定义变量 date_var, limit_var
     # 2. 循环打印日期（模拟每日处理）
@@ -43,13 +44,14 @@ def run_scripting_demo():
             
         END WHILE;
     """
-    
+
     # 注意: 脚本化查询通常会返回多个 Job 结果（每个 SELECT 都是一个子 Job）
     parent_job = client.query(query)
-    
+
     # 等待整个脚本执行完成
     parent_job.result()
     print("脚本执行完成！(可在 BigQuery 控制台查看多个子任务的输出)")
+
 
 if __name__ == "__main__":
     run_scripting_demo()

@@ -1,0 +1,56 @@
+# 1. 定义环境变量 (用于简化后续步骤)
+# 确保 SERVICE_NAME, REGION 和 SA_EMAIL 与您的 Cloud Run 部署一致
+# Cloud Build 自动注入 PROJECT_ID 和 _IMAGE_NAME
+env:
+  - 'SERVICE_NAME=helloworld'
+  - 'REGION=europe-west1'
+  - 'SA_EMAIL=ai-app-runner@guyue-001.iam.gserviceaccount.com' # 请替换为您的真实 SA 邮箱
+
+steps:
+  # 步骤 1: 容器镜像构建
+  # 使用 Cloud Build 提供的 Docker Builder 来读取 Dockerfile 并构建镜像。
+  - id: 'Build Container Image'
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '${REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/$SERVICE_NAME:$COMMIT_SHA'
+      - '.'
+    # 启用 JIB_DISABLE_USER_AGENT 环境变量以确保构建兼容性
+    env:
+      - 'JIB_DISABLE_USER_AGENT=true'
+
+  # 步骤 2: 将构建好的镜像推送到 Artifact Registry (GAR)
+  - id: 'Push to Artifact Registry'
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '${REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/$SERVICE_NAME:$COMMIT_SHA'
+    
+  # 步骤 3: 部署到 Cloud Run
+  # 使用 gcloud Builder 部署服务，并指向新的镜像标签（COMMIT_SHA）
+  - id: 'Deploy to Cloud Run'
+    name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${SERVICE_NAME}'
+      - '--image'
+      - '${REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/$SERVICE_NAME:$COMMIT_SHA'
+      - '--region'
+      - '${REGION}'
+      - '--platform'
+      - 'managed'
+      - '--service-account'
+      - '${SA_EMAIL}' # 确保使用 Day 2 创建的最小权限 SA
+      - '--allow-unauthenticated'
+      # 可选：您可以在这里添加 Day 4 的配置，例如并发数和最小实例数
+      # - '--concurrency'
+      # - '80' 
+      # - '--min-instances'
+      # - '1'
+
+# 镜像存储在 Artifact Registry 的 cloud-run-source-deploy 仓库中
+# Cloud Build 成功后，会将最终镜像的标签和摘要返回。
+images:
+  - '${REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/$SERVICE_NAME:$COMMIT_SHA'

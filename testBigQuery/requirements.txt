@@ -1,0 +1,19 @@
+# --- BigQuery 核心库 ---
+google-cloud-bigquery         # 官方 Python 客户端，用于执行 SQL 和管理资源
+
+# --- 性能加速 ---
+# 加速 Pandas dataframe 的下载速度 (使用 Storage API 二进制协议)
+google-cloud-bigquery-storage 
+# 高性能内存数据格式，BigQuery Storage API 的底层依赖
+pyarrow                       
+# 解决 BigQuery 特殊数据类型 (如 INT64, DATE) 与 Pandas 的兼容性问题
+db-dtypes                     
+
+# --- 数据分析与处理 ---
+pandas                        # 数据处理标准库
+# Pandas 官方扩展，提供 read_gbq/to_gbq，更方便地与 DataFrame 交互
+pandas_gbq                    
+
+# --- 自动化与调度 ---
+# 用于创建和管理 Scheduled Queries (定时查询)
+google-cloud-bigquery-datatransfer 

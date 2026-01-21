@@ -20,6 +20,7 @@ google-cloud-bigquery-datatransfer
 
 # --- 可视化 (Visualization) ---
 streamlit                     # 极简的 Python Web 可视化框架，用于构建数据看板
+streamlit-ace                 # 高性能交互式代码编辑器
 
-# --- 代码质量 ---
+# --- 代码质量与展示 ---
 ruff

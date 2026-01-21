@@ -1,0 +1,55 @@
+name: Python Lint & Format Check
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ruff black mypy
+        # 如果有 requirements.txt，安装项目依赖
+        if [ -f helloworld/requirements.txt ]; then
+          pip install -r helloworld/requirements.txt
+        fi
+        if [ -f testBigQuery/requirements.txt ]; then
+          pip install -r testBigQuery/requirements.txt
+        fi
+
+    - name: 🎨 Check code formatting with Black
+      run: |
+        black --check --diff .
+
+    - name: 🔍 Lint with Ruff
+      run: |
+        ruff check .
+
+    - name: 🔎 Type check with mypy (optional)
+      continue-on-error: true
+      run: |
+        mypy --ignore-missing-imports testBigQuery/ helloworld/
+
+    - name: 📊 Generate lint report
+      if: always()
+      run: |
+        echo "## Lint Results" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Code quality checks completed" >> $GITHUB_STEP_SUMMARY
